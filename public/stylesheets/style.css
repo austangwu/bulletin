@@ -1,8 +1,10 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+html, body {
+    background: url("../images/background.jpg") 50% 0px no-repeat;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    height: 100%;
 }
 
-a {
-  color: #00B7FF;
+.translucent-bg {
+    background-color: rgba(255, 255, 255, 0.7);
+    min-height: 100%;
 }

@@ -9,19 +9,18 @@ var atoken;
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-	console.log('going to auth')
-	res.redirect('/auth/google')
-});
+	if (!atoken) {
+		res.redirect('/auth/google')
+	} else {
+		res.render('index', { title: 'Bulletin' });
+	}
 
-router.get('/success', function(req, res, next){
-	console.log("calling router.get home page");
-	res.render('index', { title: 'Bulletin' });
-})
+});
 
 var forecast = new forecast({
   service: 'forecast.io',
-  key: '9cfdff0868949f528506fc3da052c243',
-  units: 'c', // Only the first letter is parsed
+  key: credentials.forecastCredentials.apiKey,
+  units: 'f', // Only the first letter is parsed
 });
 
 /* GET forecast */
@@ -32,37 +31,7 @@ router.get('/forecast', function(req, res, next) {
 	});
 });
 
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
-
-passport.deserializeUser(function(user, done) {
-  done(null, user);
-});
-
-/* Authenticate Google */
-passport.use(new GoogleStrategy({
-    clientID: credentials.googleCredentials.clientID,
-    clientSecret: credentials.googleCredentials.clientSecret,
-    callbackURL: credentials.googleCredentials.callbackURL,
-	passReqToCallback: true
-  },
-  function(request, accessToken, refreshToken, profile, done) {
-    atoken = accessToken
-    return done(null, profile);
-  }
-));
-
-/* Authentication redirects */
-router.get('/auth/google',
-  passport.authenticate('google', { scope:
-    [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile']
-}));
-
-router.get('/auth/google/callback',
-  passport.authenticate('google', { successRedirect: "/success", failureRedirect: '/auth/google'})
-)
-
+// GET Calendar
 router.get('/calendar',function(req, res, next) {
 	google_calendar = new gcal.GoogleCalendar(atoken)
 	google_calendar.events.list('austintwu@gmail.com',
@@ -77,5 +46,36 @@ router.get('/calendar',function(req, res, next) {
 	)
 	}
 )
+
+/* Authenticate Google */
+router.get('/auth/google',
+  passport.authenticate('google', { scope:
+    [ 'https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/userinfo.profile']
+}));
+
+router.get('/auth/google/callback',
+  passport.authenticate('google', { successRedirect: "/", failureRedirect: '/'})
+)
+
+passport.use(new GoogleStrategy({
+    clientID: credentials.googleCredentials.clientID,
+    clientSecret: credentials.googleCredentials.clientSecret,
+    callbackURL: credentials.googleCredentials.callbackURL,
+	passReqToCallback: true
+  },
+  function(request, accessToken, refreshToken, profile, done) {
+    atoken = accessToken
+    return done(null, profile);
+  }
+));
+
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
 
 module.exports = router;
